@@ -50,8 +50,8 @@ let isCharging = false;
 let chargeStartedAt = 0;
 let activePointerId = null;
 const MAX_CHARGE_MS = 850;
-const MIN_LIFT = 35;
-const MAX_LIFT = 390;
+const MIN_LIFT = 70;
+const MAX_LIFT = 780;
 
 for (const year of [...years].reverse()) {
   const option = document.createElement("option");
@@ -211,7 +211,7 @@ function releaseFlipCharge() {
   chargeStartedAt = 0;
   flipSide *= -1;
   const lift = lerp(MIN_LIFT, MAX_LIFT, charge);
-  player.vy = Math.max(player.vy - lift, -420);
+  player.vy = Math.max(player.vy - lift, -840);
   const burst = Math.round(6 + charge * 14);
   for (let i = 0; i < burst; i++) {
     particles.push({
