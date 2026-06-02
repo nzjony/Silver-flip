@@ -50,8 +50,8 @@ let isCharging = false;
 let chargeStartedAt = 0;
 let activePointerId = null;
 const MAX_CHARGE_MS = 850;
-const MIN_LIFT = 70;
-const MAX_LIFT = 780;
+const GRAVITY = 360;
+const HOLD_THRUST = GRAVITY * 2;
 
 for (const year of [...years].reverse()) {
   const option = document.createElement("option");
@@ -210,16 +210,14 @@ function releaseFlipCharge() {
   isCharging = false;
   chargeStartedAt = 0;
   flipSide *= -1;
-  const lift = lerp(MIN_LIFT, MAX_LIFT, charge);
-  player.vy = Math.max(player.vy - lift, -840);
-  const burst = Math.round(6 + charge * 14);
+  const burst = Math.round(4 + charge * charge * 16);
   for (let i = 0; i < burst; i++) {
     particles.push({
       x: player.x,
       y: player.y,
-      vx: (Math.random() - 0.5) * (90 + charge * 90),
-      vy: (Math.random() - 0.5) * (90 + charge * 90),
-      life: 0.38 + charge * 0.28
+      vx: (Math.random() - 0.5) * (80 + charge * 120),
+      vy: (Math.random() - 0.5) * (80 + charge * 120),
+      life: 0.3 + charge * charge * 0.36
     });
   }
 }
@@ -228,7 +226,7 @@ function update(dt) {
   const speed = 165 + level.volatility * 55;
   player.worldX += speed * dt;
   camera = player.worldX - player.x;
-  player.vy += 360 * dt;
+  player.vy += (GRAVITY - (isCharging ? HOLD_THRUST : 0)) * dt;
   player.vy *= Math.pow(0.99, dt * 60);
   player.y += player.vy * dt;
   player.spin += (flipSide * (isCharging ? 18 : 8) + player.vy * 0.015) * dt;
