@@ -51,7 +51,8 @@ let chargeStartedAt = 0;
 let activePointerId = null;
 const MAX_CHARGE_MS = 850;
 const GRAVITY = 360;
-const HOLD_THRUST = GRAVITY * 2;
+const MIN_LIFT = 28;
+const MAX_LIFT = 760;
 
 for (const year of [...years].reverse()) {
   const option = document.createElement("option");
@@ -210,6 +211,8 @@ function releaseFlipCharge() {
   isCharging = false;
   chargeStartedAt = 0;
   flipSide *= -1;
+  const lift = MIN_LIFT + (MAX_LIFT - MIN_LIFT) * charge * charge;
+  player.vy = Math.max(player.vy - lift, -820);
   const burst = Math.round(4 + charge * charge * 16);
   for (let i = 0; i < burst; i++) {
     particles.push({
@@ -226,7 +229,7 @@ function update(dt) {
   const speed = 165 + level.volatility * 55;
   player.worldX += speed * dt;
   camera = player.worldX - player.x;
-  player.vy += (GRAVITY - (isCharging ? HOLD_THRUST : 0)) * dt;
+  player.vy += GRAVITY * dt;
   player.vy *= Math.pow(0.99, dt * 60);
   player.y += player.vy * dt;
   player.spin += (flipSide * (isCharging ? 18 : 8) + player.vy * 0.015) * dt;
