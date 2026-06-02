@@ -265,12 +265,12 @@ function update(dt) {
 
 function drawBackground() {
   const gradient = ctx.createLinearGradient(0, 0, 0, H);
-  gradient.addColorStop(0, "#12141a");
-  gradient.addColorStop(1, "#0c0d10");
+  gradient.addColorStop(0, "#fbfdff");
+  gradient.addColorStop(1, "#edf3f8");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, W, H);
 
-  ctx.strokeStyle = "rgba(216, 220, 228, 0.08)";
+  ctx.strokeStyle = "rgba(86, 103, 119, 0.12)";
   ctx.lineWidth = 1;
   for (let x = -camera % 80; x < W; x += 80) {
     ctx.beginPath();
@@ -302,12 +302,12 @@ function drawTunnel() {
   [...lower].reverse().forEach(([x, y]) => ctx.lineTo(x, y));
   ctx.closePath();
   const fill = ctx.createLinearGradient(0, 0, 0, H);
-  fill.addColorStop(0, "rgba(57, 198, 189, 0.24)");
-  fill.addColorStop(1, "rgba(231, 187, 82, 0.18)");
+  fill.addColorStop(0, "rgba(22, 143, 136, 0.22)");
+  fill.addColorStop(1, "rgba(201, 144, 33, 0.16)");
   ctx.fillStyle = fill;
   ctx.fill();
 
-  ctx.strokeStyle = "rgba(216, 220, 228, 0.72)";
+  ctx.strokeStyle = "rgba(71, 86, 102, 0.68)";
   ctx.lineWidth = 4;
   ctx.beginPath();
   upper.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
@@ -316,7 +316,7 @@ function drawTunnel() {
   lower.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
   ctx.stroke();
 
-  ctx.strokeStyle = "rgba(231, 187, 82, 0.34)";
+  ctx.strokeStyle = "rgba(201, 144, 33, 0.42)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   for (let sx = -20; sx <= W + 20; sx += step) {
@@ -331,7 +331,7 @@ function drawCoin() {
   ctx.translate(player.x, player.y);
   const charge = chargeLevel();
   if (charge > 0) {
-    ctx.strokeStyle = `rgba(216, 220, 228, ${0.24 + charge * 0.52})`;
+    ctx.strokeStyle = `rgba(71, 86, 102, ${0.24 + charge * 0.52})`;
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(0, 0, player.radius + 9 + charge * 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * charge);
@@ -362,7 +362,7 @@ function drawCoin() {
 function drawParticles() {
   particles.forEach((p) => {
     ctx.globalAlpha = p.life / 0.55;
-    ctx.fillStyle = "#d8dce4";
+    ctx.fillStyle = "#7c8794";
     ctx.beginPath();
     ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
     ctx.fill();
@@ -372,9 +372,9 @@ function drawParticles() {
 
 function drawProgress() {
   const pct = clamp((player.worldX - 150) / (level.length - 150), 0, 1);
-  ctx.fillStyle = "rgba(216, 220, 228, 0.16)";
+  ctx.fillStyle = "rgba(71, 86, 102, 0.14)";
   ctx.fillRect(32, 28, W - 64, 8);
-  ctx.fillStyle = "#39c6bd";
+  ctx.fillStyle = "#168f88";
   ctx.fillRect(32, 28, (W - 64) * pct, 8);
 }
 
@@ -399,7 +399,7 @@ function drawSpark() {
   const sw = spark.width;
   const sh = spark.height;
   sparkCtx.clearRect(0, 0, sw, sh);
-  sparkCtx.fillStyle = "#111419";
+  sparkCtx.fillStyle = "#f8fafc";
   sparkCtx.fillRect(0, 0, sw, sh);
 
   const selectedIndex = years.indexOf(level.year);
@@ -410,7 +410,7 @@ function drawSpark() {
   const low = Math.min(...localValues);
   const high = Math.max(...localValues);
 
-  sparkCtx.strokeStyle = "rgba(216, 220, 228, 0.14)";
+  sparkCtx.strokeStyle = "rgba(71, 86, 102, 0.16)";
   sparkCtx.lineWidth = 1;
   for (let i = 1; i < 4; i++) {
     const y = (sh / 4) * i;
@@ -420,7 +420,7 @@ function drawSpark() {
     sparkCtx.stroke();
   }
 
-  sparkCtx.strokeStyle = "#39c6bd";
+  sparkCtx.strokeStyle = "#168f88";
   sparkCtx.lineWidth = 4;
   sparkCtx.beginPath();
   slice.forEach((year, index) => {
@@ -433,7 +433,7 @@ function drawSpark() {
   slice.forEach((year, index) => {
     const x = 24 + index * ((sw - 48) / (slice.length - 1));
     const y = sh - 18 - ((silverPrices[year] - low) / Math.max(high - low, 1)) * (sh - 36);
-    sparkCtx.fillStyle = year === level.year ? "#e7bb52" : "#d8dce4";
+    sparkCtx.fillStyle = year === level.year ? "#c99021" : "#7c8794";
     sparkCtx.beginPath();
     sparkCtx.arc(x, y, year === level.year ? 6 : 3, 0, Math.PI * 2);
     sparkCtx.fill();
