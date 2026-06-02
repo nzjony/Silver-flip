@@ -461,7 +461,16 @@ yearSelect.addEventListener("change", () => {
   resetGame(false);
 });
 
+document.addEventListener("selectstart", (event) => {
+  if (!event.target.closest("select")) event.preventDefault();
+});
+
+document.addEventListener("contextmenu", (event) => {
+  if (!event.target.closest("select")) event.preventDefault();
+});
+
 canvas.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
   if (!running || finished) {
     resetGame(true);
   }
@@ -476,15 +485,21 @@ canvas.addEventListener("pointerdown", (event) => {
 });
 
 canvas.addEventListener("pointerup", (event) => {
+  event.preventDefault();
   if (activePointerId !== null && event.pointerId !== activePointerId) return;
   releaseFlipCharge();
   activePointerId = null;
 });
 
-canvas.addEventListener("pointercancel", () => {
+canvas.addEventListener("pointercancel", (event) => {
+  event.preventDefault();
   isCharging = false;
   activePointerId = null;
 });
+
+canvas.addEventListener("touchstart", (event) => event.preventDefault(), { passive: false });
+canvas.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
+canvas.addEventListener("touchend", (event) => event.preventDefault(), { passive: false });
 
 window.addEventListener("keydown", (event) => {
   if (event.code !== "Space") return;

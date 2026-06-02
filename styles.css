@@ -16,9 +16,14 @@
   box-sizing: border-box;
 }
 
-html {
+html,
+body,
+.shell,
+.shell * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
   user-select: none;
 }
 
@@ -38,6 +43,8 @@ select {
 }
 
 select {
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
   user-select: auto;
 }
 
@@ -207,7 +214,7 @@ canvas {
   aspect-ratio: 1200 / 680;
   min-height: 420px;
   cursor: pointer;
-  touch-action: manipulation;
+  touch-action: none;
 }
 
 .overlay {
