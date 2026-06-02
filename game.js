@@ -46,6 +46,10 @@ let flipSide = 1;
 let particles = [];
 let liveQuote = null;
 let quoteStatus = "Annual";
+let isCharging = false;
+let chargeStartedAt = 0;
+let activePointerId = null;
+const MAX_CHARGE_MS = 850;
 
 for (const year of [...years].reverse()) {
   const option = document.createElement("option");
@@ -140,6 +144,9 @@ function resetGame(autoStart = false) {
   score = 0;
   flipSide = 1;
   particles = [];
+  isCharging = false;
+  chargeStartedAt = 0;
+  activePointerId = null;
   running = autoStart;
   paused = false;
   finished = false;
@@ -183,18 +190,34 @@ async function refreshLiveQuote() {
   updateStats();
 }
 
-function flip() {
+function chargeLevel(now = performance.now()) {
+  if (!isCharging) return 0;
+  return clamp((now - chargeStartedAt) / MAX_CHARGE_MS, 0, 1);
+}
+
+function beginFlipCharge() {
   if (!running || paused || finished) return;
+  if (isCharging) return;
+  isCharging = true;
+  chargeStartedAt = performance.now();
+}
+
+function releaseFlipCharge() {
+  if (!running || paused || finished || !isCharging) return;
+  const charge = chargeLevel();
+  isCharging = false;
+  chargeStartedAt = 0;
   flipSide *= -1;
-  const lift = player.vy < -80 ? 85 : 240;
-  player.vy = Math.max(player.vy - lift, -310);
-  for (let i = 0; i < 10; i++) {
+  const lift = lerp(80, 340, Math.sqrt(charge));
+  player.vy = Math.max(player.vy - lift, -390);
+  const burst = Math.round(6 + charge * 14);
+  for (let i = 0; i < burst; i++) {
     particles.push({
       x: player.x,
       y: player.y,
-      vx: (Math.random() - 0.5) * 120,
-      vy: (Math.random() - 0.5) * 120,
-      life: 0.55
+      vx: (Math.random() - 0.5) * (90 + charge * 90),
+      vy: (Math.random() - 0.5) * (90 + charge * 90),
+      life: 0.38 + charge * 0.28
     });
   }
 }
@@ -206,7 +229,7 @@ function update(dt) {
   player.vy += 360 * dt;
   player.vy *= Math.pow(0.99, dt * 60);
   player.y += player.vy * dt;
-  player.spin += (flipSide * 8 + player.vy * 0.015) * dt;
+  player.spin += (flipSide * (isCharging ? 18 : 8) + player.vy * 0.015) * dt;
 
   const center = tunnelCenter(player.worldX);
   const half = level.width / 2;
@@ -303,6 +326,14 @@ function drawTunnel() {
 function drawCoin() {
   ctx.save();
   ctx.translate(player.x, player.y);
+  const charge = chargeLevel();
+  if (charge > 0) {
+    ctx.strokeStyle = `rgba(216, 220, 228, ${0.24 + charge * 0.52})`;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(0, 0, player.radius + 9 + charge * 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * charge);
+    ctx.stroke();
+  }
   ctx.rotate(player.spin);
   const squash = Math.max(0.18, Math.abs(Math.cos(player.spin)));
   ctx.scale(squash, 1);
@@ -414,10 +445,11 @@ startButton.addEventListener("click", () => {
 pauseButton.addEventListener("click", () => {
   if (!running || finished) return;
   paused = !paused;
+  isCharging = false;
   pauseButton.textContent = paused ? "Resume" : "Pause";
   pauseButton.setAttribute("aria-pressed", String(paused));
   overlay.querySelector("h2").textContent = "Paused";
-  overlay.querySelector("p").textContent = "Tap Resume, click the stage, or press Space to keep flipping.";
+  overlay.querySelector("p").textContent = "Resume, then press and release to flip upward.";
   overlay.classList.toggle("is-hidden", !paused);
 });
 
@@ -426,33 +458,55 @@ yearSelect.addEventListener("change", () => {
   resetGame(false);
 });
 
-canvas.addEventListener("pointerdown", () => {
+canvas.addEventListener("pointerdown", (event) => {
   if (!running || finished) {
     resetGame(true);
-    return;
   }
   if (paused) {
     paused = false;
     pauseButton.textContent = "Pause";
     overlay.classList.add("is-hidden");
   }
-  flip();
+  activePointerId = event.pointerId;
+  canvas.setPointerCapture?.(event.pointerId);
+  beginFlipCharge();
+});
+
+canvas.addEventListener("pointerup", (event) => {
+  if (activePointerId !== null && event.pointerId !== activePointerId) return;
+  releaseFlipCharge();
+  activePointerId = null;
+});
+
+canvas.addEventListener("pointercancel", () => {
+  isCharging = false;
+  activePointerId = null;
 });
 
 window.addEventListener("keydown", (event) => {
   if (event.code !== "Space") return;
   event.preventDefault();
+  if (event.repeat) return;
   if (!running || finished) {
     resetGame(true);
-    return;
   }
   if (paused) {
     paused = false;
     pauseButton.textContent = "Pause";
     overlay.classList.add("is-hidden");
-    return;
   }
-  flip();
+  beginFlipCharge();
+});
+
+window.addEventListener("keyup", (event) => {
+  if (event.code !== "Space") return;
+  event.preventDefault();
+  releaseFlipCharge();
+});
+
+window.addEventListener("blur", () => {
+  isCharging = false;
+  activePointerId = null;
 });
 
 resetGame(false);
